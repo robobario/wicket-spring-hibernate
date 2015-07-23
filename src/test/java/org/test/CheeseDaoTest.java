@@ -14,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:/spring/applicationContext.xml"})
-public class CheeseDaoTest extends AbstractTransactionalJUnit4SpringContextTests{
+public class CheeseDaoTest {
 
     @Resource
     CheeseDao dao;

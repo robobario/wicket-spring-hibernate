@@ -1,7 +1,7 @@
 wicket-spring-hibernate
 =======================
 
-A dumb application based on the wicket archetype using wicket spring injection, spring transaction management, hibernate4.
+A dumb application based on the wicket archetype using wicket spring injection, spring transaction management, hibernate5.
 
 Configuration :
   * web.xml - spring ContextLoaderListener to load application context on container load, uses contextConfigLocation
