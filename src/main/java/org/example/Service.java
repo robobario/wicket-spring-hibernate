@@ -1,27 +1,37 @@
 package org.example;
 
 import org.example.entities.User;
-import org.hibernate.Criteria;
-import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Restrictions;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 
 public class Service {
 
-    @Resource
-    private SessionFactory sessionFactory;
+    @PersistenceContext
+    private EntityManager em;
 
     @Transactional
     public User getUser(String name) {
-        Criteria criteria = sessionFactory.getCurrentSession().createCriteria(User.class);
-        return (User) criteria.add(Restrictions.eq("name", name)).uniqueResult();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<User> cq = cb.createQuery(User.class);
+        Root<User> root = cq.from(User.class);
+        cq.where(cb.equal(root.get("name"), name));
+        cq.select(root);
+        TypedQuery<User> q = em.createQuery(cq);
+        List<User> resultList = q.getResultList();
+        return resultList.isEmpty() ? null : resultList.get(0);
     }
 
     @Transactional
     public void save(User user) {
-        sessionFactory.getCurrentSession().save(user);
+        em.persist(user);
     }
 
 }

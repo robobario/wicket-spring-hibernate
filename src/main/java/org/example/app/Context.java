@@ -1,21 +1,28 @@
 package org.example.app;
 
 import org.example.Service;
-import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AvailableSettings;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.orm.hibernate5.HibernateTransactionManager;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalEntityManagerFactoryBean;
+import org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.util.Properties;
 
+import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
+
+import static org.hibernate.cfg.AvailableSettings.DRIVER;
+import static org.hibernate.cfg.AvailableSettings.HBM2DDL_AUTO;
+import static org.hibernate.cfg.AvailableSettings.JPA_JDBC_URL;
+import static org.hibernate.cfg.AvailableSettings.SHOW_SQL;
+import static org.hibernate.cfg.AvailableSettings.URL;
 
 
 @Configuration
@@ -24,33 +31,31 @@ import javax.sql.DataSource;
 public class Context {
 
     @Bean
-    public DataSource dataSource(Environment env) {
-        DriverManagerDataSource source = new DriverManagerDataSource();
-        source.setDriverClassName(env.getProperty("jdbc.driver.class.name"));
-        source.setUrl(env.getProperty("jdbc.url"));
-        return source;
-    }
-
-    @Bean
-    public LocalSessionFactoryBean sessionFactory(final Environment env, DataSource dataSource) {
-        LocalSessionFactoryBean sessionFactoryBean = new LocalSessionFactoryBean();
-        sessionFactoryBean.setPackagesToScan("org.example.entities");
+    public LocalEntityManagerFactoryBean factoryBean(Environment env) {
+        LocalEntityManagerFactoryBean entityManagerFactoryBean = new LocalEntityManagerFactoryBean();
+        entityManagerFactoryBean.setPersistenceUnitName("example");
         Properties p = new Properties();
-        p.setProperty(AvailableSettings.HBM2DDL_AUTO, env.getProperty("hibernate.hbm2ddl.auto"));
-        p.setProperty(AvailableSettings.SHOW_SQL, env.getProperty("hibernate.show_sql"));
-        sessionFactoryBean.setHibernateProperties(p);
-        sessionFactoryBean.setDataSource(dataSource);
-        return sessionFactoryBean;
+        p.setProperty(HBM2DDL_AUTO, env.getProperty(HBM2DDL_AUTO));
+        p.setProperty(SHOW_SQL, env.getProperty(SHOW_SQL));
+        p.setProperty(DRIVER, env.getProperty(DRIVER));
+        p.setProperty(URL, env.getProperty(URL));
+        entityManagerFactoryBean.setJpaProperties(p);
+        return entityManagerFactoryBean;
     }
 
     @Bean
-    public PlatformTransactionManager txManager(SessionFactory sessionFactory) {
-        return new HibernateTransactionManager(sessionFactory);
+    public PlatformTransactionManager txManager(EntityManagerFactory em) {
+        return new JpaTransactionManager(em);
     }
 
     @Bean
     public Service service() {
         return new Service();
+    }
+
+    @Bean
+    public PersistenceAnnotationBeanPostProcessor persistenceAnnotationSupport() {
+        return new PersistenceAnnotationBeanPostProcessor();
     }
 
 }
